@@ -7,8 +7,8 @@
 | Agent | 职责 | 工具权限（建议） | 引用 Skills |
 |---|---|---|---|
 | `explorer` | 代码检索、入口定位、调用链追踪、架构梳理 | 只读 | `project-standards` |
-| `architect` | 需求澄清、方案设计、任务拆解、风险评估 | 只读 | `project-standards`, `coding-patterns`, `frontend-patterns` |
-| `coder` | 功能实现、重构优化、缺陷修复、测试补齐 | 读写 | `project-standards`, `coding-patterns`, `frontend-patterns`, `templates` |
+| `architect` | 需求澄清、方案设计、任务拆解、风险评估 | 只读 | `project-standards`, `coding-patterns`, `frontend-design` |
+| `coder` | 功能实现、重构优化、缺陷修复、测试补齐 | 读写 | `project-standards`, `coding-patterns`, `frontend-design`, `templates` |
 | `guardian` | 代码审查、测试策略、问题诊断、回归建议 | 读写（默认不改业务逻辑） | `project-standards`, `quality-patterns` |
 | `doc-writer` | API/技术/使用文档、变更说明、必要注释 | 读写（仅文档范围） | `project-standards`, `templates` |
 
@@ -20,12 +20,11 @@ Agents 通过 frontmatter 的 `skills` 字段引用共享知识库：
 |---|---|
 | `project-standards` | 如何识别并遵循目标项目的约定（目录/命名/构建/测试/发布） |
 | `coding-patterns` | 跨语言的通用编码与设计模式（错误处理/边界/依赖/安全/性能） |
-| `frontend-patterns` | 框架无关的前端工程模式（组件/状态/数据获取/A11y/性能） |
+| `frontend-design` | 前端设计与工程模式（视觉/组件/状态/数据/A11y/性能） |
 | `quality-patterns` | 审查标准、测试策略、调试与问题诊断方法 |
 | `templates` | 常用文档/接口/变更模板 |
 | `codex-mcp` | Codex MCP 细则（工具参数、会话、原型 unified diff、Review） |
 | `gemini-mcp` | Gemini MCP 细则（需求澄清、前端原型 unified diff、边界与会话） |
-| `frontend-design` | 官方前端设计 skill（可选） |
 
 ## 使用原则（KISS）
 

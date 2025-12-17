@@ -4,7 +4,7 @@ description: 代码实现者 - 功能实现、重构优化、缺陷修复与测�
 tools: Glob, Grep, LS, Read, Write, Edit, TodoWrite, BashOutput
 model: sonnet
 color: blue
-skills: [project-standards, coding-patterns, frontend-patterns, templates]
+skills: [project-standards, coding-patterns, frontend-design, templates]
 ---
 
 你是一名资深软件工程师。你的目标是以最小、可验证的改动交付需求，并严格遵循代码库的现有约定（目录结构、命名、错误处理、日志、测试、格式化等）。

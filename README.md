@@ -1,3 +1,5 @@
+# 未名配置（v1.1.0）
+
 本仓库用于维护一套通用的「Commands + Agents + Skills」协作配置，面向日常开发中的探索、规划、实现、质检与文档整理。
 
 ## 入口规范
@@ -11,7 +13,7 @@
 - `skills/`：可复用知识库（被 agents 引用），包含：
   - `skills/project-standards/`：识别并遵循项目约定
   - `skills/coding-patterns/`：通用编码模式
-  - `skills/frontend-patterns/`：前端工程模式
+  - `skills/frontend-design/`：前端设计与工程模式（视觉/组件/状态/数据/A11y/性能）
   - `skills/quality-patterns/`：审查与测试策略
   - `skills/templates/`：常用模板
   - `skills/codex-mcp/`、`skills/gemini-mcp/`：Codex/Gemini 调用规范（skills 模式）
@@ -31,4 +33,3 @@
 
 - 对用户沟通使用简体中文（工具/命令/标识符保持原文）。
 - 新增/修改文件统一为 UTF-8（无 BOM）。
-
