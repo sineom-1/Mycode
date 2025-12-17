@@ -1,10 +1,10 @@
-# Claude 编程协作规范（skills 模式）
+# Claude 编程协作规范
 
 > 核心理念：如无必要，勿增实体。简单优于复杂，清晰优于晦涩。
 
 ## 0) 适用范围
 
-- 本仓库采用「Commands + Agents + Skills」组织协作规范。
+- 采用「Commands + Agents + Skills」组织协作规范。
 
 ## 1) 语言与沟通
 
@@ -56,3 +56,27 @@
 - 未经请求扩大改动范围或预留未来扩展。
 - 不记录/不复用 `SESSION_ID`。
 - 新增/修改文件使用非 UTF-8（无 BOM）或引入乱码。
+
+## 8) 附录：工具调用规范
+
+- 通用
+  - 每轮最多 1 个 MCP 服务；限定 `relative_path/topic`，避免过度抓取。
+  - 原型阶段必须 `sandbox="read-only"`，并要求**只输出 unified diff patch**（不得直接写文件）。
+  - Codex/Gemini 必须保存并复用 `SESSION_ID`，避免上下文丢失。
+- Codex / Gemini
+  - 细则与参数：见 `skills/codex-mcp/SKILL.md`、`skills/gemini-mcp/SKILL.md`；通用调用模板见 `skills/templates/SKILL.md`。
+- Serena（本地检索优先）
+  - 优先用于 `get_symbols_overview` / `find_symbol` / `search_for_pattern` / `list_dir` 等只读检索；务必限定 `relative_path`。
+  - 不用于直接修改文件；调用前需确保已完成 `activate_project` / `onboarding`（如适用）。
+- Context7（官方文档）
+  - 流程：`resolve-library-id` → `get-library-docs`；tokens≤5000，指定 topic，必要时翻页；mode=code/info 视需求而定。
+  - 单轮仅调用一个外部文档服务；无法获取时降级 DuckDuckGo（同一轮不要并行外部搜索）。
+- Sequential Thinking（复杂规划）
+  - 适用：非简单任务的多步骤规划/诊断；输出 6–10 步可执行计划，不暴露推理过程。
+  - 参数：`total_thoughts≤10`；完成后更新 plan 或直接执行。
+- Shrimp Task Manager（任务拆分/跟踪）
+  - 用途：`split_tasks` / `plan_task` / `execute_task` / `update_task` / `verify_task`。
+  - `updateMode` 默认 `clearAllTasks`（除非明确需要保留旧任务）；JSON 禁止注释；任务保持原子性并写清 `dependencies`。
+  - 仅需清空旧任务集时用 `clearAllTasks`；需要保留任务时优先 `append` / `selective`。
+- 降级
+  - 工具失败：重试一次 → 本地处理并在汇报中标注缺口/风险。
