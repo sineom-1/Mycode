@@ -23,8 +23,8 @@ Agents 通过 frontmatter 的 `skills` 字段引用共享知识库：
 | `frontend-design` | 前端设计与工程模式（视觉/组件/状态/数据/A11y/性能） |
 | `quality-patterns` | 审查标准、测试策略、调试与问题诊断方法 |
 | `templates` | 常用文档/接口/变更模板 |
-| `codex-mcp` | Codex MCP 细则（工具参数、会话、原型 unified diff、Review） |
-| `gemini-mcp` | Gemini MCP 细则（需求澄清、前端原型 unified diff、边界与会话） |
+| `collaborating-with-codex` | Codex CLI Bridge 细则（参数、会话、原型 unified diff、Review） |
+| `collaborating-with-gemini` | Gemini CLI Bridge 细则（需求澄清、前端原型 unified diff、边界与会话） |
 
 ## 使用原则（KISS）
 

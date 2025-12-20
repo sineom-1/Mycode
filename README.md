@@ -16,7 +16,7 @@
   - `skills/frontend-design/`：前端设计与工程模式（视觉/组件/状态/数据/A11y/性能）
   - `skills/quality-patterns/`：审查与测试策略
   - `skills/templates/`：常用模板
-  - `skills/codex-mcp/`、`skills/gemini-mcp/`：Codex/Gemini 调用规范（skills 模式）
+  - `skills/collaborating-with-codex/`、`skills/collaborating-with-gemini/`：Codex/Gemini CLI Bridge 调用规范（skills 模式）
 
 ## 推荐使用方式（最小闭环）
 

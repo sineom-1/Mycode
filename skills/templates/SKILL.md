@@ -100,30 +100,31 @@ description: 常用模板（需求澄清、设计文档、接口契约、测试�
 
 ## 6) Codex / Gemini 调用参数模板（可选）
 
-当需要使用 Codex/Gemini 获取原型/方案/Review 时，使用以下最小约束与参数模板：
+当需要使用 Codex/Gemini 获取原型/方案/Review 时，使用以下最小约束与调用模板（对应本仓库的 CLI Bridge skills）：
 
 - 建议用英文撰写 `PROMPT`（对模型更稳定），对用户沟通保持中文
-- **原型阶段必须 `sandbox: "read-only"`**，并要求**只输出 unified diff patch**（不得直接写文件）
+- 原型阶段必须要求：**“OUTPUT: Unified Diff Patch ONLY. Do not modify files.”**
+- Codex 原型阶段建议 `--sandbox read-only`（Gemini 如需隔离可开启 `--sandbox`）
 - 必须保存并复用 `SESSION_ID`（续对话传入同一个会话）
 - 原型仅作参考：需按项目规范重写为生产级代码，不可直接照搬
 - 原型质量不佳可要求重试，最多 2 次；仍不佳则自行实现并记录取舍
 
 ### Codex（后端实现 / Debug / Review）
 
-```json
-{
-  "PROMPT": "需求 + 技术要求 + 仅输出 unified diff patch（或 Review 结论）",
-  "cd": "/project/path",
-  "sandbox": "read-only",
-  "SESSION_ID": null
-}
+```bash
+# 初次调用（建议 read-only 原型）
+python skills/collaborating-with-codex/scripts/codex_bridge.py --cd "/path/to/project" --sandbox read-only --PROMPT "Task... OUTPUT: Unified Diff Patch ONLY. Do not modify files."
+
+# 续对话（复用 SESSION_ID）
+python skills/collaborating-with-codex/scripts/codex_bridge.py --cd "/path/to/project" --sandbox read-only --SESSION_ID "<SESSION_ID>" --PROMPT "Follow-up..."
 ```
 
 ### Gemini（前端 / 需求澄清 / 原型）
 
-```json
-{
-  "PROMPT": "用户原始需求（尽量原文转发）+ 仅输出 unified diff patch（或澄清问题/方案）",
-  "SESSION_ID": null
-}
+```bash
+# 初次调用（前端需求尽量原文粘贴进 PROMPT）
+python skills/collaborating-with-gemini/scripts/gemini_bridge.py --cd "/path/to/project" --sandbox --PROMPT "User requirement (verbatim if possible) ... OUTPUT: Unified Diff Patch ONLY. Do not modify files."
+
+# 续对话（复用 SESSION_ID）
+python skills/collaborating-with-gemini/scripts/gemini_bridge.py --cd "/path/to/project" --sandbox --SESSION_ID "<SESSION_ID>" --PROMPT "Follow-up..."
 ```
