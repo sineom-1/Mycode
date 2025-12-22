@@ -2,11 +2,6 @@
 
 > 核心理念：如无必要，勿增实体。简单优于复杂，清晰优于晦涩。
 
-## 0) 适用范围
-
-- 采用「Commands + Agents + Skills」组织协作规范。
-- 当前生效入口：本文件 `CLAUDE.md`（仓库介绍见 `README.md`）。
-
 ## 1) 语言与沟通
 
 - 与用户沟通：一律简体中文。
@@ -53,7 +48,7 @@
 
 ## 6) 工具调用与降级
 
-- 调用优先级：本地检索（Serena 等）→ 官方文档（Context7）→ 复杂规划（Sequential Thinking）→ 外部搜索（DuckDuckGo 官方域）→ Playwright/DeepWiki（确需时）。
+- 调用优先级：代码检索（Relace）→ 官方文档（Context7）→ 复杂规划（Sequential Thinking）→ 外部搜索（DuckDuckGo 官方域）→ Playwright/DeepWiki（确需时）。
 - 外部调用：每轮最多 1 个 MCP 服务；限定 `relative_path/topic`；失败重试一次后降级本地处理并标注缺口。
 - 会话管理：Codex/Gemini 必须记录并复用 `SESSION_ID`，避免上下文丢失。
 
@@ -81,9 +76,12 @@
   - Codex/Gemini 必须保存并复用 `SESSION_ID`，避免上下文丢失。
 - Codex / Gemini
   - 细则与参数：见 `skills/collaborating-with-codex/SKILL.md`、`skills/collaborating-with-gemini/SKILL.md`；通用调用模板见 `skills/templates/SKILL.md`。
-- Serena（本地检索优先）
-  - 优先用于 `get_symbols_overview` / `find_symbol` / `search_for_pattern` / `list_dir` 等只读检索；务必限定 `relative_path`。
-  - 不用于直接修改文件；调用前需确保已完成 `activate_project` / `onboarding`（如适用）。
+- Relace（代码检索与编辑）
+  - `relace_search`：语义化代码搜索，查询使用自然语言（如 "How is authentication implemented?"）；必须指定 `workdir` 为项目绝对路径。
+  - `fast_apply`：高速代码编辑（10,000+ tokens/sec）；使用截断占位符（`// ... existing code ...`）标记保留区域；返回 UDiff。
+  - `cloud_sync` / `cloud_search`：同步代码库到 Relace Cloud 并进行云端语义搜索；大型项目或需要跨分支搜索时使用。
+  - `cloud_list` / `cloud_info` / `cloud_clear`：云端仓库管理。
+  - 适用场景：定位文件、理解代码流程、批量编辑、深度语义搜索。
 - Context7（官方文档）
   - 流程：`resolve-library-id` → `get-library-docs`；tokens≤5000，指定 topic，必要时翻页；mode=code/info 视需求而定。
   - 单轮仅调用一个外部文档服务；无法获取时降级 DuckDuckGo（同一轮不要并行外部搜索）。
@@ -96,10 +94,6 @@
   - 仅需清空旧任务集时用 `clearAllTasks`；需要保留任务时优先 `append` / `selective`。
 - 降级
   - 工具失败：重试一次 → 本地处理并在汇报中标注缺口/风险。
-
-## 10)（可选）用户级全局提示词（推荐）
-
-为让本仓库的「Commands + Agents + Skills」在 Claude Code 等 CLI 场景下更稳定，可在 `~/.claude/CLAUDE.md`（或项目级 `.claude/CLAUDE.md`）追加以下最小全局协议：
 
 ```markdown
 # Global Protocols
