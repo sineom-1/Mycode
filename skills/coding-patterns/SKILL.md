@@ -1,60 +1,80 @@
 ---
 name: coding-patterns
-description: 跨语言的通用编码与设计模式（错误处理、边界划分、依赖管理、可测试性、性能与安全）
+description: 跨语言的通用编码模式（边界划分、错误处理、依赖管理、数据一致性、性能与安全）
 ---
 
-本 skill 提供与语言/框架无关的通用编码要点。目标是：更少的复杂度、更清晰的边界、更可测试的实现。
+语言/框架无关的编码模式参考。聚焦：何时用、怎么用、常见错误。
 
-## 核心原则
+## 1) 边界与核心分离
 
-- KISS：简单优于聪明
-- YAGNI：只做当前明确需要的
-- DRY：消除重复，但避免“为了抽象而抽象”
-- SOLID：单一职责、依赖抽象、接口隔离
+**适用**：API 入口、Controller、Gateway、CLI 命令处理
 
-## 常用模式（通用）
+| 边界层 | 核心层 |
+|--------|--------|
+| 输入校验、鉴权、参数解析 | 业务规则、纯逻辑 |
+| 错误映射、日志埋点 | 无副作用、可测试 |
 
-### 1) 边界与核心分离
+**反模式**：在核心层直接返回 HTTP 状态码、直接写日志、直接访问 request 对象
 
-- 边界层负责：输入校验、鉴权/授权、参数解析、错误映射、日志埋点
-- 核心逻辑负责：业务规则与可测试的纯逻辑
+## 2) 错误处理
 
-### 2) 错误处理与错误模型
-
-- 不吞错；错误信息要带上下文（做什么失败、输入是什么、影响是什么）
-- 对外错误要稳定：统一错误码/异常类型/响应结构
-
-伪代码示例：
+**原则**：不吞错、带上下文、对外稳定
 
 ```text
-function handler(input):
+handler(input):
   validated = validate(input) or return error(BAD_REQUEST, details)
   result = service(validated) catch err:
-    if isNotFound(err): return error(NOT_FOUND)
-    if isConflict(err): return error(CONFLICT)
-    log(err, context)
-    return error(INTERNAL)
+    if isNotFound(err): return NOT_FOUND
+    if isConflict(err): return CONFLICT
+    log(err, {action, input, user})  // 内部日志带上下文
+    return INTERNAL                   // 对外错误结构稳定
   return ok(result)
 ```
 
-### 3) 依赖管理
+**反模式**：`catch(e) { return null }`、错误信息只有 "failed"、内部异常直接暴露给用户
 
-- 依赖通过参数注入（构造函数/容器）而不是全局变量
-- 依赖接口化，便于替换与测试
+## 3) 依赖管理
 
-### 4) 数据与一致性
+**原则**：注入优于全局、接口优于实现
 
-- 明确字段可空性与默认值；避免“靠约定”传递不变量
-- 幂等与重试：外部调用要考虑超时、重试、重复请求
+```text
+// Good: 依赖注入
+class OrderService(paymentGateway, inventory):
+  ...
 
-### 5) 性能与资源
+// Bad: 全局依赖
+class OrderService:
+  gateway = GlobalPaymentGateway.instance()
+```
 
-- 先度量后优化；避免过早优化
-- 注意资源释放（连接/文件/锁/订阅），避免无界队列与缓存
+**反模式**：单例滥用、测试时需要 mock 全局状态、循环依赖
 
-### 6) 安全基线
+## 4) 数据一致性
 
-- 最小权限原则（鉴权、授权、数据访问）
-- 输入校验与编码（防注入/越权/敏感信息泄露）
-- 机密信息不入日志、不进仓库
+**原则**：显式可空性、幂等设计、重试安全
 
+- 字段定义明确 `required/optional`，不靠"约定"
+- 外部调用带幂等键，支持安全重试
+- 状态变更用乐观锁或版本号
+
+**反模式**：`if (field != null)` 散落各处、重复提交导致重复扣款、并发更新丢失
+
+## 5) 性能与资源
+
+**原则**：先度量后优化、资源必释放
+
+- 优化前先有 baseline 数据
+- 连接/文件/锁/订阅 必须在 finally/defer/using 中释放
+- 避免无界队列、无界缓存
+
+**反模式**：凭直觉优化、连接泄漏、OOM 后才发现缓存无上限
+
+## 6) 安全基线
+
+**原则**：最小权限、输入不可信、机密不落盘
+
+- 鉴权：验证身份；授权：验证权限；数据访问：验证所有权
+- 输入校验 + 输出编码（防 SQL/XSS/命令注入）
+- 机密不入日志、不进仓库、不硬编码
+
+**反模式**：`isAdmin` 只在前端检查、日志打印完整请求体含密码、API Key 写在代码里
