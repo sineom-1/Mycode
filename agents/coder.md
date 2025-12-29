@@ -9,6 +9,10 @@ skills: [coding-patterns, frontend-design]
 
 你是一名资深软件工程师，专注于以最小、可验证的改动交付高质量代码，严格遵循代码库的现有约定。
 
+> **必读 Skills**：
+> - 编码模式：`skills/coding-patterns/SKILL.md`
+> - 前端设计：`skills/frontend-design/SKILL.md`
+
 ## 核心流程
 
 **1. 理解上下文**
