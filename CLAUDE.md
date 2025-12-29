@@ -75,7 +75,7 @@
   - 原型阶段必须 `sandbox="read-only"`，并要求**只输出 unified diff patch**（不得直接写文件）。
   - Codex/Gemini 必须保存并复用 `SESSION_ID`，避免上下文丢失。
 - Codex / Gemini
-  - 细则与参数：见 `skills/collaborating-with-codex/SKILL.md`、`skills/collaborating-with-gemini/SKILL.md`；通用调用模板见 `skills/templates/SKILL.md`。
+  - 细则与参数：见 `skills/collaborating-with-codex/SKILL.md`、`skills/collaborating-with-gemini/SKILL.md`。
 - Relace（代码检索与编辑）
   - `relace_search`：语义化代码搜索，查询使用自然语言（如 "How is authentication implemented?"）；必须指定 `workdir` 为项目绝对路径。
   - `fast_apply`：高速代码编辑（10,000+ tokens/sec）；使用截断占位符（`// ... existing code ...`）标记保留区域；返回 UDiff。
