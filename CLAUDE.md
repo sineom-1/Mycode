@@ -7,7 +7,7 @@
 - 与用户沟通：一律简体中文。
 - 与外部模型/工具交互：`PROMPT` 以英文为主；但涉及前端/移动端/小程序等需求时，必须在 `PROMPT` 中包含用户原始需求（尽量原文粘贴，不要转述/改写）。
 
-## 2) 核心原则（KISS 优先）
+## 2) 核心原则
 
 - 奥卡姆 / KISS / YAGNI：最简单可行方案；标准库优先；不做未提需求的扩展。
 - SRP / OCP / DRY：职责单一；消除重复；扩展不破坏既有行为。
@@ -20,15 +20,47 @@
 - 语言分工：与用户中文；与外部模型/工具英文（命令、标识符、日志保持原文）。
 - 前端铁律：前端/移动端需求优先用 Gemini；不得让 Gemini 编写复杂后端逻辑；以 Gemini 原型为基点重写。
 
-## 3) 默认工作流（可按需降级）
+## 3) Workflow
 
-1. **理解**：最小范围检索现有实现与项目约定（以代码与文档证据为准，不猜）。
-2. **澄清**：列出关键问题与验收标准；信息不足时优先向用户提问并等待确认。
-3. **规划**：形成 ≤6 条可执行步骤；需要多模型协作时按“前端/需求澄清 → Gemini，后端/逻辑 → Codex”分工讨论；中等以上改动建议使用 `/dev` 全流程。
-4. **原型（如需）**：按需向 Codex/Gemini 索要原型（必须 read-only，且只输出 unified diff patch），仅作参考；再按项目规范重写为生产级实现。
-5. **实现**：聚焦范围，保证可验证（测试/命令/回归路径）；未得到用户明确同意不修改文件。
-6. **审查**：完成后必须进行质量审查（需求匹配、逻辑/性能/安全风险）；默认使用 `collaborating-with-codex` 做 review；工具不可用则自查并标注缺口，必要时迭代修复。
-7. **汇报**：变更摘要、修改文件、验证方式、风险与下一步建议。
+**强制执行**：以下流程适用于所有任务，始终强制执行，不得降级或跳步。
+
+### Phase 1: 上下文全量检索 (Auggie Interface)
+**执行条件**：在生成任何建议或代码前。
+1.  **工具调用**：调用 `mcp__auggie-mcp__codebase-retrieval`。
+2.  **检索策略**：
+    - 禁止基于假设（Assumption）回答。
+    - 使用自然语言（NL）构建语义查询（Where/What/How）。
+    - **完整性检查**：必须获取相关类、函数、变量的完整定义与签名。若上下文不足，触发递归检索。
+3.  **需求对齐**：若检索后需求仍有模糊空间，**必须**向用户输出引导性问题列表，直至需求边界清晰（无遗漏、无冗余）。
+
+
+### Phase 2: 多模型协作分析 
+1.  **分发输入**：：将用户的**原始需求**（不带预设观点）分发给 Codex 和 Gemini。注意，Codex/Gemini都有完善的CLI系统，所以**仅需给出入口文件和row index**(而非Snippet)。
+2.  **方案迭代**：
+    - 要求模型提供多角度解决方案。
+    - 触发**交叉验证**：整合各方思路，进行迭代优化，在过程中执行逻辑推演和优劣势互补，直至生成无逻辑漏洞的 Step-by-step 实施计划。
+3.  **强制阻断 (Hard Stop)**：向用户展示最终实施计划（含适度伪代码）；必须以加粗文本输出询问："Shall I proceed with this plan? (Y/N)"；立即终止当前回复。绝对禁止在收到用户明确的 "Y" 之前执行 Phase 3 或调用任何文件读取工具。
+
+### Phase 3: 原型获取
+- **Route A: 前端/UI/样式 (Gemini Kernel)**
+  - **限制**：上下文 < 32k。gemini对于后端逻辑的理解有缺陷，其回复需要客观审视。
+  - **指令**：请求 CSS/React/Vue 原型。以此为最终前端设计原型与视觉基准。
+- **Route B: 后端/逻辑/算法 (Codex Kernel)**
+  - **能力**：利用其逻辑运算与 Debug 能力。
+  - **指令**：请求逻辑实现原型。
+- **通用约束**：：在与Codex/Gemini沟通的任何情况下，**必须**在 Prompt 中**明确要求** 返回 `Unified Diff Patch`，严禁Codex/Gemini做任何真实修改。
+
+### Phase 4: 编码实施
+**执行准则**：
+1.  **逻辑重构**：基于 Phase 3 的原型，去除冗余，**重写**为高可读、高可维护性、企业发布级代码。
+2.  **文档规范**：非必要不生成注释与文档，代码自解释。
+3.  **最小作用域**：变更仅限需求范围，**强制审查**变更是否引入副作用并做针对性修正。
+
+### Phase 5: 审计与交付
+1.  **自动审计**：变更生效后，**强制立即调用** Codex与Gemini **同时进行** Code Review，并进行整合修复。
+2.  **交付**：审计通过后反馈给用户。
+
+----
 
 ## 4) Commands / Agents（推荐入口）
 
@@ -48,7 +80,7 @@
 
 ## 6) 工具调用与降级
 
-- 调用优先级：代码检索（Relace）→ 官方文档（Context7）→ 复杂规划（Sequential Thinking）→ 外部搜索（DuckDuckGo 官方域）→ Playwright/DeepWiki（确需时）。
+- 调用优先级：代码检索（Auggie）→ 官方文档（Context7）→ 复杂规划（Sequential Thinking）→ 外部搜索（DuckDuckGo 官方域）→ Playwright/DeepWiki（确需时）。
 - 外部调用：每轮最多 1 个 MCP 服务；限定 `relative_path/topic`；失败重试一次后降级本地处理并标注缺口。
 - 会话管理：Codex/Gemini 必须记录并复用 `SESSION_ID`，避免上下文丢失。
 
@@ -76,11 +108,9 @@
   - Codex/Gemini 必须保存并复用 `SESSION_ID`，避免上下文丢失。
 - Codex / Gemini
   - 细则与参数：见 `skills/collaborating-with-codex/SKILL.md`、`skills/collaborating-with-gemini/SKILL.md`。
-- Relace（代码检索与编辑）
-  - `relace_search`：语义化代码搜索，查询使用自然语言（如 "How is authentication implemented?"）；必须指定 `workdir` 为项目绝对路径。
-  - `fast_apply`：高速代码编辑（10,000+ tokens/sec）；使用截断占位符（`// ... existing code ...`）标记保留区域；返回 UDiff。
-  - `cloud_sync` / `cloud_search`：同步代码库到 Relace Cloud 并进行云端语义搜索；大型项目或需要跨分支搜索时使用。
-  - `cloud_list` / `cloud_info` / `cloud_clear`：云端仓库管理。
+- Auggie（代码检索）
+  - 流程：`mcp__auggie-context__codebase-retrieval`；使用自然语言（Where/What/How）构建语义查询；必须获取相关类/函数/变量的完整定义与签名；上下文不足则递归检索。
+  - 约束：在生成任何建议或代码前必须执行；若检索后仍有模糊点，必须输出引导性问题列表直至需求边界清晰。
   - 适用场景：定位文件、理解代码流程、批量编辑、深度语义搜索。
 - Context7（官方文档）
   - 流程：`resolve-library-id` → `get-library-docs`；tokens≤5000，指定 topic，必要时翻页；mode=code/info 视需求而定。

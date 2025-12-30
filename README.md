@@ -11,11 +11,9 @@
 - `commands/`：可复用的命令入口（如 `/dev`、`/explore`、`/plan`、`/code`、`/check`、`/doc`）
 - `agents/`：子代理定义与使用指南（见 `agents/README.md`）
 - `skills/`：可复用知识库（被 agents 引用），包含：
-  - `skills/project-standards/`：识别并遵循项目约定
+  - `skills/codebase-retrieval/`：代码库语义检索规范（基于 Auggie MCP）
   - `skills/coding-patterns/`：通用编码模式
   - `skills/frontend-design/`：前端设计与工程模式（视觉/组件/状态/数据/A11y/性能）
-  - `skills/quality-patterns/`：审查与测试策略
-  - `skills/templates/`：常用模板
   - `skills/collaborating-with-codex/`、`skills/collaborating-with-gemini/`：Codex/Gemini CLI Bridge 调用规范（skills 模式）
 
 ## 推荐使用方式（最小闭环）
